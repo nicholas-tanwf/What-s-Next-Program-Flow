@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What's Next — Program Flow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+SC:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#07070d;--text:#f0f0f5;--muted:rgba(240,240,245,.5);--dim:rgba(240,240,245,.25);
+  --accent:#7c5cfc;--aglow:rgba(124,92,252,.2);
+  --blue:#4f8fff;--purple:#a855f7;--green:#22c55e;--gold:#e8c36a;--rose:#fb7185;--orange:#f97316;
+  --g1:linear-gradient(135deg,#7c5cfc,#4f8fff);
+  --glass:rgba(255,255,255,.04);--gb:rgba(255,255,255,.08);--gb2:rgba(255,255,255,.05);
+}
+html{scroll-behavior:smooth;scroll-snap-type:y mandatory}
+body{font-family:'Inter','Noto Sans SC',sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+
+.slide{min-height:100vh;scroll-snap-align:start;display:flex;align-items:center;justify-content:center;position:relative;padding:48px 80px;overflow:hidden}
+@media(max-width:768px){.slide{padding:36px 24px}}
+.inner{max-width:1160px;width:100%;position:relative;z-index:2}
+
+/* Orbs */
+.orb{position:absolute;border-radius:50%;filter:blur(130px);pointer-events:none;opacity:.2}
+.o1{width:700px;height:700px;background:radial-gradient(circle,#7c5cfc,transparent 70%);top:-250px;right:-200px}
+.o2{width:600px;height:600px;background:radial-gradient(circle,#4f8fff,transparent 70%);bottom:-250px;left:-200px}
+.o3{width:450px;height:450px;background:radial-gradient(circle,#a855f7,transparent 70%);top:40%;left:40%;transform:translate(-50%,-50%)}
+
+/* Lang toggle */
+.lang{position:fixed;top:24px;right:28px;z-index:200;display:flex;background:var(--glass);border:1px solid var(--gb);border-radius:100px;backdrop-filter:blur(20px);padding:3px}
+.lb{padding:6px 14px;border-radius:100px;font-size:11px;font-weight:700;color:var(--muted);border:none;background:transparent;cursor:pointer;transition:all .2s;letter-spacing:.5px}
+.lb.on{background:var(--accent);color:#fff;box-shadow:0 2px 10px var(--aglow)}
+[data-i18n]{transition:opacity .2s}
+.fading [data-i18n]{opacity:0}
+
+/* Nav dots */
+.nav{position:fixed;right:28px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px;z-index:100}
+.nd{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.15);cursor:pointer;border:none;padding:0;transition:all .3s}
+.nd.on{background:var(--accent);box-shadow:0 0 8px var(--aglow);transform:scale(1.4)}
+
+/* Page num */
+.pnum{position:absolute;bottom:28px;right:36px;font-size:11px;color:rgba(255,255,255,.18);letter-spacing:1px;z-index:3}
+
+/* Fade in */
+.fi{opacity:0;transform:translateY(20px);transition:opacity .7s ease,transform .7s ease}
+.fi.vis{opacity:1;transform:none}
+.d1{transition-delay:.08s}.d2{transition-delay:.18s}.d3{transition-delay:.28s}.d4{transition-delay:.38s}.d5{transition-delay:.48s}
+
+/* Typography */
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+.eyebrow.green{color:var(--green)}
+h1{font-size:clamp(36px,5vw,64px);font-weight:800;line-height:1.06;letter-spacing:-2px;background:linear-gradient(135deg,#fff,rgba(255,255,255,.72));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:10px}
+h2{font-size:clamp(26px,3.5vw,46px);font-weight:800;line-height:1.08;letter-spacing:-1.5px;margin-bottom:10px}
+
+/* ─── SLIDE 1: TIMELINE ─── */
+.meta-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:40px}
+.meta-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 16px;border-radius:100px;font-size:12px;font-weight:600;background:var(--glass);border:1px solid var(--gb);color:var(--muted)}
+.meta-pill .dot{width:6px;height:6px;border-radius:50%}
+
+/* Timeline blocks */
+.tl-wrap{display:flex;flex-direction:column;gap:0;position:relative}
+.tl-wrap::before{content:'';position:absolute;left:72px;top:8px;bottom:8px;width:2px;background:linear-gradient(180deg,var(--accent),rgba(79,143,255,.08));border-radius:2px}
+
+.tl-block{display:flex;gap:0;align-items:stretch;position:relative}
+.tl-time{width:72px;text-align:right;padding-right:18px;flex-shrink:0;display:flex;flex-direction:column;justify-content:center;padding-top:16px;padding-bottom:16px}
+.tl-time .t{font-size:13px;font-weight:800;line-height:1.2}
+.tl-time .dur{font-size:10px;color:var(--dim);margin-top:2px}
+
+.tl-dot-wrap{width:16px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;position:relative;z-index:2}
+.tl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:22px}
+
+.tl-content{flex:1;padding:14px 0 14px 20px;border-bottom:1px solid rgba(255,255,255,.04)}
+.tl-block:last-child .tl-content{border-bottom:none}
+.tl-tag{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px}
+.tl-title{font-size:15px;font-weight:700;color:var(--text);line-height:1.3;margin-bottom:4px}
+.tl-sub{font-size:12px;color:var(--muted);line-height:1.6}
+.tl-speakers{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+.tl-spk{font-size:10px;font-weight:600;padding:3px 10px;border-radius:100px;background:var(--glass);border:1px solid var(--gb2);color:var(--muted)}
+
+/* Space badge */
+.space-badge{display:inline-flex;align-items:center;gap:5px;padding:2px 10px;border-radius:100px;font-size:10px;font-weight:700;margin-left:8px;vertical-align:middle}
+
+/* ─── SLIDE 2: DETAIL ─── */
+.space-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:28px}
+@media(max-width:900px){.space-grid{grid-template-columns:1fr}}
+
+.space-card{border-radius:20px;padding:28px;background:var(--glass);border:1px solid var(--gb);position:relative;overflow:hidden}
+.space-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.space-card.lobby::before{background:linear-gradient(90deg,var(--accent),var(--blue))}
+.space-card.ny::before{background:linear-gradient(90deg,var(--purple),var(--rose))}
+.space-card.full::before{background:linear-gradient(90deg,var(--green),var(--blue))}
+
+.sc-header{display:flex;align-items:center;gap:12px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,.05)}
+.sc-icon{font-size:24px}
+.sc-title{font-size:16px;font-weight:800}
+.sc-loc{font-size:11px;color:var(--muted);margin-top:2px}
+
+.seg{display:flex;gap:14px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04);align-items:flex-start}
+.seg:last-child{border-bottom:none}
+.seg-time{font-size:11px;font-weight:800;color:var(--muted);width:38px;flex-shrink:0;padding-top:2px;text-align:right}
+.seg-body{flex:1}
+.seg-title{font-size:13px;font-weight:700;color:var(--text);line-height:1.3;margin-bottom:2px}
+.seg-detail{font-size:11px;color:var(--muted);line-height:1.55}
+.seg-spks{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
+.seg-spk{font-size:9px;font-weight:600;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);color:var(--muted)}
+
+.note-bar{background:linear-gradient(135deg,rgba(124,92,252,.07),rgba(79,143,255,.04));border:1px solid rgba(124,92,252,.18);border-radius:14px;padding:16px 22px;margin-top:20px;display:flex;gap:14px;align-items:center}
+.note-bar .ni{font-size:18px;flex-shrink:0}
+.note-bar p{font-size:13px;color:var(--muted);line-height:1.6}
+.note-bar strong{color:var(--text)}
+</style>
+</head>
+<body>
+
+<div class="lang"><button class="lb on" onclick="setLang('en')">EN</button><button class="lb" onclick="setLang('zh')">中文</button></div>
+<nav class="nav" id="nav"></nav>
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 1 — HIGH-LEVEL PROGRAM FLOW
+════════════════════════════════════════════════════════════ -->
+<section class="slide" id="s0">
+  <div class="pnum">01 / 02</div>
+  <div class="orb o1"></div><div class="orb o2"></div>
+  <div class="inner">
+
+    <div class="fi">
+      <div class="eyebrow green" data-i18n="ey1" data-en="Episode 1 · Friday, March 27 · ChronoAI Office" data-zh="第一期 · 3月27日（周五）· ChronoAI办公室">Episode 1 · Friday, March 27 · ChronoAI Office</div>
+      <h1 data-i18n="h1" data-en="Program Flow." data-zh="活动日程。">Program Flow.</h1>
+    </div>
+
+    <div class="meta-row fi d1">
+      <span class="meta-pill"><span class="dot" style="background:var(--green)"></span><span data-i18n="m1" data-en="50 curated attendees" data-zh="50位精选参会者">50 curated attendees</span></span>
+      <span class="meta-pill"><span class="dot" style="background:var(--gold)"></span><span data-i18n="m2" data-en="4:30 PM — 7:30 PM" data-zh="下午4:30 — 7:30">4:30 PM — 7:30 PM</span></span>
+      <span class="meta-pill"><span class="dot" style="background:var(--accent)"></span><span data-i18n="m3" data-en="3 spaces — Lobby · New York Room · Open" data-zh="3个空间——大厅 · 纽约厅 · 开放区">3 spaces — Lobby · New York Room · Open</span></span>
+    </div>
+
+    <div class="tl-wrap fi d2">
+
+      <!-- 4:30 DOORS -->
+      <div class="tl-block">
+        <div class="tl-time"><div class="t" style="color:var(--muted)">4:30</div><div class="dur" data-i18n="dur0" data-en="30 min" data-zh="30分钟">30 min</div></div>
+        <div class="tl-dot-wrap"><div class="tl-dot" style="background:rgba(255,255,255,.2)"></div></div>
+        <div class="tl-content">
+          <div class="tl-tag" style="color:var(--muted)" data-i18n="tag0" data-en="PRE-EVENT" data-zh="活动前">PRE-EVENT</div>
+          <div class="tl-title" data-i18n="tt0" data-en="Doors Open — Registration & Mingle" data-zh="开门迎宾——签到与交流">Doors Open — Registration & Mingle</div>
+          <div class="tl-sub" data-i18n="ts0" data-en="Guests arrive, name tags, light refreshments. Ambient music." data-zh="嘉宾到场、领取名牌、轻食茶点。背景音乐。">Guests arrive, name tags, light refreshments. Ambient music.</div>
+        </div>
+      </div>
+
+      <!-- 5:00 SPEECHES -->
+      <div class="tl-block">
+        <div class="tl-time"><div class="t" style="color:var(--gold)">5:00</div><div class="dur" data-i18n="dur1" data-en="30 min" data-zh="30分钟">30 min</div></div>
+        <div class="tl-dot-wrap"><div class="tl-dot" style="background:var(--gold);box-shadow:0 0 10px rgba(232,195,106,.5)"></div></div>
+        <div class="tl-content">
+          <div class="tl-tag" style="color:var(--gold)" data-i18n="tag1" data-en="LEARN · LOBBY" data-zh="学习 · 大厅">LEARN · LOBBY</div>
+          <div class="tl-title" data-i18n="tt1" data-en="Opening Speeches" data-zh="开场演讲">Opening Speeches</div>
+          <div class="tl-sub" data-i18n="ts1" data-en="Three speakers. Three perspectives. The real talk every early-stage builder needs to hear." data-zh="三位演讲者。三种视角。每位早期构建者都需要听到的真实分享。">Three speakers. Three perspectives. The real talk every early-stage builder needs to hear.</div>
+          <div class="tl-speakers">
+            <span class="tl-spk" data-i18n="sp1" data-en="Li Fan — Welcome (5 min)" data-zh="李凡 — 欢迎致辞（5分钟）">Li Fan — Welcome (5 min)</span>
+            <span class="tl-spk" data-i18n="sp2" data-en="Terence, Hashmeta — Vibe Marketing (10 min)" data-zh="Terence, Hashmeta — Vibe营销（10分钟）">Terence, Hashmeta — Vibe Marketing (10 min)</span>
+            <span class="tl-spk" data-i18n="sp3" data-en="Prof Liu Yang, NTU — Trustworthy AI (10 min)" data-zh="刘杨教授, NTU — 可信AI（10分钟）">Prof Liu Yang, NTU — Trustworthy AI (10 min)</span>
+            <span class="tl-spk" data-i18n="sp4" data-en="Open Q&A (5 min)" data-zh="开放问答（5分钟）">Open Q&A (5 min)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5:30 DEMOS -->
+      <div class="tl-block">
+        <div class="tl-time"><div class="t" style="color:var(--accent)">5:30</div><div class="dur" data-i18n="dur2" data-en="75 min" data-zh="75分钟">75 min</div></div>
+        <div class="tl-dot-wrap"><div class="tl-dot" style="background:var(--accent);box-shadow:0 0 10px var(--aglow)"></div></div>
+        <div class="tl-content">
+          <div class="tl-tag" style="color:var(--accent)" data-i18n="tag2" data-en="DEMO · LOBBY" data-zh="演示 · 大厅">DEMO · LOBBY</div>
+          <div class="tl-title" data-i18n="tt2" data-en="Live Product Demos — 5 builders" data-zh="产品现场演示——5位构建者">Live Product Demos — 5 builders</div>
+          <div class="tl-sub" data-i18n="ts2" data-en="Built → Live on App Store in 3 days. The exact process, the decisions, the shortcuts. No filters." data-zh="构建 → 3天上架App Store。确切的流程、决策和捷径。不加滤镜。">Built → Live on App Store in 3 days. The exact process, the decisions, the shortcuts. No filters.</div>
+          <div class="tl-speakers">
+            <span class="tl-spk" data-i18n="sd1" data-en="SoulGarden (10 + 5 Q&A)" data-zh="SoulGarden（10 + 5 问答）">SoulGarden (10 + 5 Q&A)</span>
+            <span class="tl-spk" data-i18n="sd2" data-en="RiteSet (10 + 5 Q&A)" data-zh="RiteSet（10 + 5 问答）">RiteSet (10 + 5 Q&A)</span>
+            <span class="tl-spk" data-i18n="sd3" data-en="External Demo × 3 (10 + 5 each)" data-zh="外部演示 × 3（每个10 + 5分钟）">External Demo × 3 (10 + 5 each)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6:45 BREAKOUT -->
+      <div class="tl-block">
+        <div class="tl-time"><div class="t" style="color:var(--purple)">6:45</div><div class="dur" data-i18n="dur3" data-en="45 min" data-zh="45分钟">45 min</div></div>
+        <div class="tl-dot-wrap"><div class="tl-dot" style="background:var(--purple);box-shadow:0 0 10px rgba(168,85,247,.5)"></div></div>
+        <div class="tl-content">
+          <div class="tl-tag" style="color:var(--purple)" data-i18n="tag3" data-en="BREAKOUT · PARALLEL" data-zh="分组 · 同时进行">BREAKOUT · PARALLEL</div>
+          <div class="tl-title" data-i18n="tt3" data-en="Show & Ask + Open Networking" data-zh="展示与提问 + 开放社交">Show & Ask + Open Networking</div>
+          <div class="tl-sub" data-i18n="ts3" data-en="New York Room: 6 pre-selected builders get direct feedback from Li Fan, Nicholas, Dannick. Lobby: open networking." data-zh="纽约厅：6位预选构建者获得李凡、Nicholas、Dannick的直接反馈。大厅：开放社交。">New York Room: 6 pre-selected builders get direct feedback from Li Fan, Nicholas, Dannick. Lobby: open networking.</div>
+          <div class="tl-speakers">
+            <span class="tl-spk" data-i18n="sb1" data-en="📍 New York Room — Show & Ask" data-zh="📍 纽约厅 — 展示与提问">📍 New York Room — Show & Ask</span>
+            <span class="tl-spk" data-i18n="sb2" data-en="📍 Lobby — Open Networking" data-zh="📍 大厅 — 开放社交">📍 Lobby — Open Networking</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7:30 WRAP -->
+      <div class="tl-block">
+        <div class="tl-time"><div class="t" style="color:var(--green)">7:30</div></div>
+        <div class="tl-dot-wrap"><div class="tl-dot" style="background:var(--green);box-shadow:0 0 10px rgba(34,197,94,.5)"></div></div>
+        <div class="tl-content">
+          <div class="tl-tag" style="color:var(--green)" data-i18n="tag4" data-en="CLOSE" data-zh="结束">CLOSE</div>
+          <div class="tl-title" data-i18n="tt4" data-en="Event Ends" data-zh="活动结束">Event Ends</div>
+          <div class="tl-sub" data-i18n="ts4" data-en="Venue clear by 8:00 PM." data-zh="场地于晚上8:00清场。">Venue clear by 8:00 PM.</div>
+        </div>
+      </div>
+
+    </div><!-- /tl-wrap -->
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 2 — DETAILED BREAKDOWN BY SPACE
+════════════════════════════════════════════════════════════ -->
+<section class="slide" id="s1">
+  <div class="pnum">02 / 02</div>
+  <div class="orb o3"></div><div class="orb o2" style="bottom:auto;top:-200px;left:auto;right:-200px"></div>
+  <div class="inner">
+
+    <div class="fi">
+      <div class="eyebrow" data-i18n="ey2" data-en="Detailed Breakdown" data-zh="详细分解">Detailed Breakdown</div>
+      <h2 data-i18n="h2" data-en="Three spaces.<br>Every minute accounted for." data-zh="三个空间。<br>每分钟都有安排。">Three spaces.<br>Every minute accounted for.</h2>
+    </div>
+
+    <div class="space-grid fi d2">
+
+      <!-- LOBBY (LEFT COLUMN) -->
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div class="space-card lobby">
+          <div class="sc-header">
+            <div class="sc-icon">🎤</div>
+            <div>
+              <div class="sc-title" data-i18n="sc1t" data-en="Lobby — Speeches" data-zh="大厅 — 演讲">Lobby — Speeches</div>
+              <div class="sc-loc" data-i18n="sc1l" data-en="5:00 PM — 5:30 PM" data-zh="下午5:00 — 5:30">5:00 PM — 5:30 PM</div>
+            </div>
+          </div>
+          <div class="seg">
+            <div class="seg-time">5:00</div>
+            <div class="seg-body">
+              <div class="seg-title" data-i18n="sg1t" data-en="Welcome & Series Vision" data-zh="欢迎与系列愿景">Welcome & Series Vision</div>
+              <div class="seg-detail" data-i18n="sg1d" data-en="Li Fan opens the series, sets the tone." data-zh="李凡开启系列活动，奠定基调。">Li Fan opens the series, sets the tone.</div>
+              <div class="seg-spks"><span class="seg-spk">Li Fan · 5 min</span></div>
+            </div>
+          </div>
+          <div class="seg">
+            <div class="seg-time">5:05</div>
+            <div class="seg-body">
+              <div class="seg-title" data-i18n="sg2t" data-en="You Vibe Coded It. Now Vibe Market It." data-zh="你用Vibe Coding做了。现在用Vibe营销推广。">You Vibe Coded It. Now Vibe Market It.</div>
+              <div class="seg-detail" data-i18n="sg2d" data-en="Why traditional marketing fails solo builders. AI as distribution channel. Getting discovered with zero budget." data-zh="为什么传统营销对独立构建者失效。AI作为分发渠道。零预算获得曝光。">Why traditional marketing fails solo builders. AI as distribution channel. Getting discovered with zero budget.</div>
+              <div class="seg-spks"><span class="seg-spk">Terence, Hashmeta · 10 min</span></div>
+            </div>
+          </div>
+          <div class="seg">
+            <div class="seg-time">5:15</div>
+            <div class="seg-body">
+              <div class="seg-title" data-i18n="sg3t" data-en="Anyone Can Build With AI. But Can You Trust What You Built?" data-zh="任何人都能用AI构建。但你能信任你构建的吗？">Anyone Can Build With AI. But Can You Trust What You Built?</div>
+              <div class="seg-detail" data-i18n="sg3d" data-en="Trustworthy AI, accountability, the role of the human builder when AI does the work." data-zh="可信AI、问责制、当AI完成工作时人类构建者的角色。">Trustworthy AI, accountability, the role of the human builder when AI does the work.</div>
+              <div class="seg-spks"><span class="seg-spk">Prof Liu Yang, NTU · 10 min</span></div>
+            </div>
+          </div>
+          <div class="seg">
+            <div class="seg-time">5:25</div>
+            <div class="seg-body">
+              <div class="seg-title" data-i18n="sg4t" data-en="Open Q&A — All Speakers" data-zh="开放问答——所有演讲者">Open Q&A — All Speakers</div>
+              <div class="seg-detail" data-i18n="sg4d" data-en="Moderated. Audience questions." data-zh="主持人引导。观众提问。">Moderated. Audience questions.</div>
+              <div class="seg-spks"><span class="seg-spk" data-i18n="sgqs" data-en="All 3 speakers · 5 min" data-zh="3位演讲者 · 5分钟">All 3 speakers · 5 min</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-card lobby">
+          <div class="sc-header">
+            <div class="sc-icon">🚀</div>
+            <div>
+              <div class="sc-title" data-i18n="sc2t" data-en="Lobby — Demos" data-zh="大厅 — 演示">Lobby — Demos</div>
+              <div class="sc-loc" data-i18n="sc2l" data-en="5:30 PM — 6:45 PM" data-zh="下午5:30 — 6:45">5:30 PM — 6:45 PM</div>
+            </div>
+          </div>
+          <div class="seg">
+            <div class="seg-time">5:30</div>
+            <div class="seg-body">
+              <div class="seg-title">SoulGarden</div>
+              <div class="seg-detail" data-i18n="sds1" data-en="Build → App Store in 3 days. The full journey." data-zh="构建 → 3天上架App Store。完整历程。">Build → App Store in 3 days. The full journey.</div>
+              <div class="seg-spks"><span class="seg-spk" data-i18n="sdst1" data-en="ChronoAI team · 10 min + 5 Q&A" data-zh="ChronoAI团队 · 10分钟 + 5分钟问答">ChronoAI team · 10 min + 5 Q&A</span></div>
+            </div>
+          </div>
+          <div class="seg">
+            <div class="seg-time">5:45</div>
+            <div class="seg-body">
+              <div class="seg-title">RiteSet</div>
+              <div class="seg-detail" data-i18n="sds2" data-en="From concept to deployed product. Design decisions and GTM." data-zh="从概念到已部署产品。设计决策和GTM。">From concept to deployed product. Design decisions and GTM.</div>
+              <div class="seg-spks"><span class="seg-spk" data-i18n="sdst2" data-en="Calvin & Dannick · 10 min + 5 Q&A" data-zh="Calvin & Dannick · 10分钟 + 5分钟问答">Calvin & Dannick · 10 min + 5 Q&A</span></div>
+            </div>
+          </div>
+          <div class="seg">
+            <div class="seg-time">6:00</div>
+            <div class="seg-body">
+              <div class="seg-title" data-i18n="sde1" data-en="External Demo 1" data-zh="外部演示 1">External Demo 1</div>
+              <div class="seg-spks"><span class="seg-spk" data-i18n="sdest" data-en="Selected applicant · 10 min + 5 Q&A" data-zh="精选申请者 · 10分钟 + 5分钟问答">Selected applicant · 10 min + 5 Q&A</span></div>
+            </div>
+          </div>
+          <div class="seg">
+            <div class="seg-time">6:15</div>
+            <div class="seg-body">
+              <div class="seg-title" data-i18n="sde2" data-en="External Demo 2" data-zh="外部演示 2">External Demo 2</div>
+              <div class="seg-spks"><span class="seg-spk" data-i18n="sdest2" data-en="Selected applicant · 10 min + 5 Q&A" data-zh="精选申请者 · 10分钟 + 5分钟问答">Selected applicant · 10 min + 5 Q&A</span></div>
+            </div>
+          </div>
+          <div class="seg">
+            <div class="seg-time">6:30</div>
+            <div class="seg-body">
+              <div class="seg-title" data-i18n="sde3" data-en="External Demo 3" data-zh="外部演示 3">External Demo 3</div>
+              <div class="seg-spks"><span class="seg-spk" data-i18n="sdest3" data-en="Selected applicant · 10 min + 5 Q&A" data-zh="精选申请者 · 10分钟 + 5分钟问答">Selected applicant · 10 min + 5 Q&A</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div class="space-card ny">
+          <div class="sc-header">
+            <div class="sc-icon">💬</div>
+            <div>
+              <div class="sc-title" data-i18n="sc3t" data-en="New York Room — Show & Ask" data-zh="纽约厅 — 展示与提问">New York Room — Show & Ask</div>
+              <div class="sc-loc" data-i18n="sc3l" data-en="6:45 PM — 7:30 PM · Intimate · 6 spots" data-zh="下午6:45 — 7:30 · 小型 · 6个名额">6:45 PM — 7:30 PM · Intimate · 6 spots</div>
+            </div>
+          </div>
+          <div class="seg">
+            <div class="seg-time">6:45</div>
+            <div class="seg-body">
+              <div class="seg-title" data-i18n="ny1t" data-en="Builder Presentations + Live Feedback" data-zh="构建者展示 + 现场反馈">Builder Presentations + Live Feedback</div>
+              <div class="seg-detail" data-i18n="ny1d" data-en="6 pre-applied builders each get 5 min to present their app or idea. Panel gives direct, honest feedback — strategy, marketing, design. No fluff. Real answers." data-zh="6位预申请构建者，每人有5分钟展示他们的应用或想法。专家组给予直接、诚实的反馈——战略、营销、设计。无废话。真实解答。">6 pre-applied builders each get 5 min to present their app or idea. Panel gives direct, honest feedback — strategy, marketing, design. No fluff. Real answers.</div>
+              <div class="seg-spks">
+                <span class="seg-spk" data-i18n="nyp1" data-en="Li Fan — Strategy" data-zh="李凡 — 战略">Li Fan — Strategy</span>
+                <span class="seg-spk" data-i18n="nyp2" data-en="Nicholas — Marketing" data-zh="Nicholas — 营销">Nicholas — Marketing</span>
+                <span class="seg-spk" data-i18n="nyp3" data-en="Dannick — Design" data-zh="Dannick — 设计">Dannick — Design</span>
+              </div>
+            </div>
+          </div>
+          <div class="seg">
+            <div class="seg-time" style="color:var(--dim)">Note</div>
+            <div class="seg-body">
+              <div class="seg-detail" style="color:rgba(240,240,245,.35);font-style:italic" data-i18n="nyn" data-en="Presenters applied via Lu.ma RSVP form. Observer seats available. Room kept quiet and focused." data-zh="展示者通过Lu.ma报名表申请。有旁听席位。保持安静专注的环境。">Presenters applied via Lu.ma RSVP form. Observer seats available. Room kept quiet and focused.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-card full">
+          <div class="sc-header">
+            <div class="sc-icon">🌐</div>
+            <div>
+              <div class="sc-title" data-i18n="sc4t" data-en="Lobby — Open Networking" data-zh="大厅 — 开放社交">Lobby — Open Networking</div>
+              <div class="sc-loc" data-i18n="sc4l" data-en="6:45 PM — 7:30 PM · All guests" data-zh="下午6:45 — 7:30 · 所有嘉宾">6:45 PM — 7:30 PM · All guests</div>
+            </div>
+          </div>
+          <div class="seg" style="border:none">
+            <div class="seg-time">6:45</div>
+            <div class="seg-body">
+              <div class="seg-title" data-i18n="net1" data-en="Free-form networking" data-zh="自由社交">Free-form networking</div>
+              <div class="seg-detail" data-i18n="net1d" data-en="Drinks, music, unstructured time. Speakers accessible. Builders connecting. The part that keeps people coming back." data-zh="饮品、音乐、非结构化时间。演讲者可接触。构建者互相联结。让人们一直回来的环节。">Drinks, music, unstructured time. Speakers accessible. Builders connecting. The part that keeps people coming back.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="note-bar fi d4">
+          <div class="ni">📋</div>
+          <p data-i18n="note" data-en="<strong>All demos follow a standard format:</strong> 2 min what + why · 5 min live walkthrough · 3 min how you shipped it · 5 min Q&A. Laptop and HDMI required. Slides optional." data-zh="<strong>所有演示遵循标准格式：</strong> 2分钟 什么+为什么 · 5分钟现场演示 · 3分钟你如何发布的 · 5分钟问答。需要笔记本电脑和HDMI。幻灯片可选。"><strong>All demos follow a standard format:</strong> 2 min what + why · 5 min live walkthrough · 3 min how you shipped it · 5 min Q&A. Laptop and HDMI required. Slides optional.</p>
+        </div>
+      </div>
+
+    </div><!-- /space-grid -->
+  </div>
+</section>
+
+<script>
+let lang='en';
+function setLang(l){
+  if(l===lang)return;lang=l;
+  document.querySelectorAll('.lb').forEach(b=>b.classList.toggle('on',b.textContent.trim()===(l==='en'?'EN':'中文')));
+  document.body.classList.add('fading');
+  setTimeout(()=>{document.querySelectorAll('[data-i18n]').forEach(el=>{const v=el.getAttribute('data-'+l);if(v)el.innerHTML=v});document.body.classList.remove('fading')},200);
+}
+const slides=document.querySelectorAll('.slide'),nav=document.getElementById('nav');
+slides.forEach((_,i)=>{const d=document.createElement('button');d.className='nd';d.onclick=()=>slides[i].scrollIntoView({behavior:'smooth'});nav.appendChild(d)});
+const nds=document.querySelectorAll('.nd');
+slides.forEach(s=>new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){const i=[...slides].indexOf(e.target);nds.forEach((d,j)=>d.classList.toggle('on',i===j))}})},{threshold:.5}).observe(s));
+document.querySelectorAll('.fi').forEach(el=>new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('vis')})},{threshold:.08}).observe(el));
+document.addEventListener('keydown',e=>{const a=[...slides].findIndex(s=>{const r=s.getBoundingClientRect();return r.top>=-10&&r.top<innerHeight/2});if(e.key==='ArrowDown'&&a<slides.length-1)slides[a+1].scrollIntoView({behavior:'smooth'});if(e.key==='ArrowUp'&&a>0)slides[a-1].scrollIntoView({behavior:'smooth'})});
+</script>
+</body>
+</html>
